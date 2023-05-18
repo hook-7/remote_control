@@ -1,8 +1,8 @@
 import React,{useState, useEffect} from "react";
 import { Text, View, TouchableOpacity, StyleSheet } from "react-native";
 
+const baseURL= '120.77.79.24:38081';
 // const baseURL= '192.168.1.130';
-const baseURL= 's.0-9.fun:38081';
 
 
 const Circle = () => {
@@ -63,7 +63,8 @@ const Circle = () => {
     <View style={styles.circle}>
       <TouchableOpacity
         style={[styles.quarter, styles.topLeft]}
-        onPress={() =>{sendMessage("up")}}
+        onPressIn={() =>{sendMessage("up")}}
+        onPressOut={() =>{sendMessage("stop")}}
       >
         <View style={[styles.quarter, styles.topLeft , styles.noBorder]}>
           <View style={[styles.buttonTextWrapper]}>
@@ -73,7 +74,8 @@ const Circle = () => {
       </TouchableOpacity>
       <TouchableOpacity
         style={[styles.quarter, styles.topRight]}
-        onPress={() =>{sendMessage("right")}}
+        onPressIn={() =>{sendMessage("right")}}
+        onPressOut={() =>{sendMessage("stop")}}
       >
         <View style={[styles.quarter, styles.topLeft, styles.noBorder]}>
           <View style={styles.buttonTextWrapper}>
@@ -83,7 +85,8 @@ const Circle = () => {
       </TouchableOpacity>
       <TouchableOpacity
         style={[styles.quarter, styles.bottomLeft]}
-        onPress={() =>{sendMessage("left")}}
+        onPressIn={() =>{sendMessage("left")}}
+        onPressOut={() =>{sendMessage("stop")}}
       >
         <View style={[styles.quarter, styles.topLeft, styles.noBorder]}>
           <View style={styles.buttonTextWrapper}>
@@ -93,7 +96,8 @@ const Circle = () => {
       </TouchableOpacity>
       <TouchableOpacity
         style={[styles.quarter, styles.bottomRight]}
-        onPress={() =>{sendMessage("down")}}
+        onPressIn={() =>{sendMessage("down")}}
+        onPressOut={() =>{sendMessage("stop")}}
       >
         <View style={[styles.quarter, styles.topLeft, styles.noBorder]}>
           <View style={styles.buttonTextWrapper}>
