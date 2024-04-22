@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Text, View, TouchableOpacity, StyleSheet ,Button } from "react-native";
-import Dialog from "react-native-dialog";
+import { Text, View, TouchableOpacity, StyleSheet } from "react-native";
+// import Dialog from "react-native-dialog";
 
 const baseURL = "120.77.79.24:38081";
 // const baseURL= '192.168.1.130';
@@ -59,7 +59,6 @@ const App = () => {
   };
   const handleLongPress = () => {
     console.log("LongPress");
-    showDialog()
   };
 
   const buttonProps = (direction) => ({
@@ -69,44 +68,16 @@ const App = () => {
     style: [styles.quarter, styles[direction], styles.noBorder],
   });
 
-  const [visible, setVisible] = useState(false);
-  const [inputText, setInputText] = useState("");
-
-  const handleCancel = () => {
-    setVisible(false);
-  };
-
-  const handleSave = () => {
-    console.log("Saved:", inputText); // 可以在这里调用 sendMessage
-    setVisible(false);
-  };
-
-  const showDialog = () => {
-    setVisible(true);
-  };
   return (
-    <View style={styles.circle}>
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-
-        <Dialog.Container visible={visible}>
-          <Dialog.Title>编辑消息</Dialog.Title>
-          <Dialog.Input
-            onChangeText={(text) => setInputText(text)}
-            value={inputText}
-            placeholder="输入新的消息"
-          />
-          <Dialog.Button label="取消" onPress={handleCancel} />
-          <Dialog.Button label="保存" onPress={handleSave} />
-        </Dialog.Container>
+      <View style={styles.circle}>
+        {["up", "right", "left", "down"].map((direction) => (
+          <TouchableOpacity key={direction} {...buttonProps(direction)}>
+            <View style={styles.buttonTextWrapper}>
+              <Text style={styles.buttonText}>{direction}</Text>
+            </View>
+          </TouchableOpacity>
+        ))}
       </View>
-      {["up", "right", "left", "down"].map((direction) => (
-        <TouchableOpacity key={direction} {...buttonProps(direction)}>
-          <View style={styles.buttonTextWrapper}>
-            <Text style={styles.buttonText}>{direction}</Text>
-          </View>
-        </TouchableOpacity>
-      ))}
-    </View>
   );
 };
 
