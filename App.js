@@ -1,20 +1,20 @@
-import React,{useState, useEffect} from "react";
-import { Text, View, TouchableOpacity, StyleSheet } from "react-native";
+import React, { useState, useEffect } from "react";
+import { Text, View, TouchableOpacity, StyleSheet ,Button } from "react-native";
+import Dialog from "react-native-dialog";
 
-const baseURL= '120.77.79.24:38081';
+const baseURL = "120.77.79.24:38081";
 // const baseURL= '192.168.1.130';
 
-
-const Circle = () => {
+const App = () => {
   const [socket, setSocket] = useState(null);
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
-    let ws = new WebSocket('ws://' + baseURL + '/ws');
+    let ws = new WebSocket("ws://" + baseURL + "/ws");
     setSocket(ws);
 
     const handleOpen = () => {
-      console.log('WebSocket connection opened');
+      console.log("WebSocket connection opened");
     };
 
     const handleMessage = (event) => {
@@ -23,11 +23,11 @@ const Circle = () => {
     };
 
     const handleClose = (event) => {
-      console.log('WebSocket connection closed');
+      console.log("WebSocket connection closed");
       setSocket(null);
       // Attempt to reconnect
       setTimeout(() => {
-        ws = new WebSocket('ws://' + baseURL + '/ws');
+        ws = new WebSocket("ws://" + baseURL + "/ws");
         setSocket(ws);
         ws.onopen = handleOpen;
         ws.onmessage = handleMessage;
@@ -38,11 +38,11 @@ const Circle = () => {
     ws.onopen = handleOpen;
     ws.onmessage = handleMessage;
     ws.onclose = handleClose;
-    const heartbeatInterval = setInterval(()=>{
+    const heartbeatInterval = setInterval(() => {
       if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({ type: 'heartbeat' }));
+        socket.send(JSON.stringify({ type: "heartbeat" }));
       }
-    },5000)
+    }, 5000);
     return () => {
       if (socket) {
         socket.close();
@@ -51,60 +51,61 @@ const Circle = () => {
     };
   }, []);
 
-
   const sendMessage = (text) => {
-    console.log(text)
+    console.log(text);
     if (socket) {
-      socket.send("at_"+text);
+      socket.send("at_" + text);
     }
   };
+  const handleLongPress = () => {
+    console.log("LongPress");
+    showDialog()
+  };
 
+  const buttonProps = (direction) => ({
+    onPressIn: () => sendMessage(direction),
+    onPressOut: () => sendMessage("stop"),
+    onLongPress: handleLongPress,
+    style: [styles.quarter, styles[direction], styles.noBorder],
+  });
+
+  const [visible, setVisible] = useState(false);
+  const [inputText, setInputText] = useState("");
+
+  const handleCancel = () => {
+    setVisible(false);
+  };
+
+  const handleSave = () => {
+    console.log("Saved:", inputText); // 可以在这里调用 sendMessage
+    setVisible(false);
+  };
+
+  const showDialog = () => {
+    setVisible(true);
+  };
   return (
     <View style={styles.circle}>
-      <TouchableOpacity
-        style={[styles.quarter, styles.topLeft]}
-        onPressIn={() =>{sendMessage("up")}}
-        onPressOut={() =>{sendMessage("stop")}}
-      >
-        <View style={[styles.quarter, styles.topLeft , styles.noBorder]}>
-          <View style={[styles.buttonTextWrapper]}>
-            <Text style={[styles.buttonText]}>Up</Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.quarter, styles.topRight]}
-        onPressIn={() =>{sendMessage("right")}}
-        onPressOut={() =>{sendMessage("stop")}}
-      >
-        <View style={[styles.quarter, styles.topLeft, styles.noBorder]}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+
+        <Dialog.Container visible={visible}>
+          <Dialog.Title>编辑消息</Dialog.Title>
+          <Dialog.Input
+            onChangeText={(text) => setInputText(text)}
+            value={inputText}
+            placeholder="输入新的消息"
+          />
+          <Dialog.Button label="取消" onPress={handleCancel} />
+          <Dialog.Button label="保存" onPress={handleSave} />
+        </Dialog.Container>
+      </View>
+      {["Up", "Right", "Left", "Down"].map((direction) => (
+        <TouchableOpacity key={direction} {...buttonProps(direction)}>
           <View style={styles.buttonTextWrapper}>
-            <Text style={styles.buttonText}>right</Text>
+            <Text style={styles.buttonText}>{direction}</Text>
           </View>
-        </View>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.quarter, styles.bottomLeft]}
-        onPressIn={() =>{sendMessage("left")}}
-        onPressOut={() =>{sendMessage("stop")}}
-      >
-        <View style={[styles.quarter, styles.topLeft, styles.noBorder]}>
-          <View style={styles.buttonTextWrapper}>
-            <Text style={styles.buttonText}>left</Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.quarter, styles.bottomRight]}
-        onPressIn={() =>{sendMessage("down")}}
-        onPressOut={() =>{sendMessage("stop")}}
-      >
-        <View style={[styles.quarter, styles.topLeft, styles.noBorder]}>
-          <View style={styles.buttonTextWrapper}>
-            <Text style={styles.buttonText}>down</Text>
-          </View>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      ))}
     </View>
   );
 };
@@ -134,16 +135,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  topLeft: {
+  Up: {
     borderTopLeftRadius: 100,
   },
-  topRight: {
+  Right: {
     borderTopRightRadius: 100,
   },
-  bottomLeft: {
+  Left: {
     borderBottomLeftRadius: 100,
   },
-  bottomRight: {
+  Down: {
     borderBottomRightRadius: 100,
   },
   buttonTextWrapper: {
@@ -162,8 +163,8 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 0 },
   },
   noBorder: {
-    borderWidth: 0,
+    borderWidth: 3,
   },
 });
 
-export default Circle;
+export default App;
