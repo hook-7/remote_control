@@ -99,7 +99,7 @@ const App = () => {
           <Dialog.Button label="保存" onPress={handleSave} />
         </Dialog.Container>
       </View>
-      {["Up", "Right", "Left", "Down"].map((direction) => (
+      {["up", "right", "left", "down"].map((direction) => (
         <TouchableOpacity key={direction} {...buttonProps(direction)}>
           <View style={styles.buttonTextWrapper}>
             <Text style={styles.buttonText}>{direction}</Text>
@@ -135,16 +135,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  Up: {
+  up: {
     borderTopLeftRadius: 100,
   },
-  Right: {
+  right: {
     borderTopRightRadius: 100,
   },
-  Left: {
+  left: {
     borderBottomLeftRadius: 100,
   },
-  Down: {
+  down: {
     borderBottomRightRadius: 100,
   },
   buttonTextWrapper: {
