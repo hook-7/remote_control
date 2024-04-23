@@ -1,64 +1,64 @@
-import React, { useState, useEffect } from "react";
-import { Text, View, TouchableOpacity, StyleSheet } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { Text, View, TouchableOpacity, StyleSheet, Button } from "react-native";
 // import Dialog from "react-native-dialog";
 
 const baseURL = "120.77.79.24:38081";
 // const baseURL= '192.168.1.130';
 
 const App = () => {
-  const [socket, setSocket] = useState(null);
   const [messages, setMessages] = useState([]);
+  const socketRef = useRef(null);
+
+  const heartbeatRef = useRef(null);
 
   useEffect(() => {
-    let ws = new WebSocket("ws://" + baseURL + "/ws");
-    setSocket(ws);
+    const connectWebSocket = () => {
+      socketRef.current = new WebSocket(`ws://${baseURL}/ws`);
 
-    const handleOpen = () => {
-      console.log("WebSocket connection opened");
+      socketRef.current.onopen = () => {
+        console.log("WebSocket connection opened");
+        // 发送心跳保持连接
+        heartbeatRef.current = setInterval(() => {
+          if (socketRef.current.readyState === WebSocket.OPEN) {
+            socketRef.current.send(JSON.stringify({ type: "heartbeat" }));
+          }
+        }, 60000);
+      };
+
+      socketRef.current.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        setMessages(prev => [...message]);
+      };
+
+      socketRef.current.onclose = (event) => {
+        console.log("WebSocket connection closed");
+        clearInterval(heartbeatRef.current);
+        // 重连逻辑
+        setTimeout(() => {
+          connectWebSocket();
+        }, 1000);
+      };
     };
 
-    const handleMessage = (event) => {
-      const message = JSON.parse(event.data);
-      setMessages(message);
-    };
+    connectWebSocket();
 
-    const handleClose = (event) => {
-      console.log("WebSocket connection closed");
-      setSocket(null);
-      // Attempt to reconnect
-      setTimeout(() => {
-        ws = new WebSocket("ws://" + baseURL + "/ws");
-        setSocket(ws);
-        ws.onopen = handleOpen;
-        ws.onmessage = handleMessage;
-        ws.onclose = handleClose;
-      }, 1000);
-    };
-
-    ws.onopen = handleOpen;
-    ws.onmessage = handleMessage;
-    ws.onclose = handleClose;
-    const heartbeatInterval = setInterval(() => {
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({ type: "heartbeat" }));
-      }
-    }, 5000);
     return () => {
-      if (socket) {
-        socket.close();
+      if (socketRef.current) {
+        socketRef.current.close();
       }
-      clearInterval(heartbeatInterval);
+      clearInterval(heartbeatRef.current);
     };
-  }, []);
+  }, []); 
 
   const sendMessage = (text) => {
-    console.log(text);
-    if (socket) {
-      socket.send("at_" + text);
+    console.log(`Sending message: ${text}`);
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      socketRef.current.send(`at_${text}`);
     }
   };
+
   const handleLongPress = () => {
-    console.log("LongPress");
+    console.log("LongPress activated");
   };
 
   const buttonProps = (direction) => ({
@@ -69,6 +69,25 @@ const App = () => {
   });
 
   return (
+    <View style={styles.container}>
+      
+      <TouchableOpacity
+        onPress={() => console.log(messages[messages.length - 1])}
+        style={styles.button}
+      >
+        <Text style={styles.topButton}>{messages.length > 0 ? messages[messages.length - 1] : "No messages"}</Text>
+      </TouchableOpacity>
+
+
+      <TouchableOpacity
+        onPress={() =>{
+          console.log("重连中....");
+        } }
+        style={styles.button}
+      >
+          <Text style={styles.topButton} >{"test"}</Text>
+      </TouchableOpacity>
+
       <View style={styles.circle}>
         {["up", "right", "left", "down"].map((direction) => (
           <TouchableOpacity key={direction} {...buttonProps(direction)}>
@@ -78,10 +97,32 @@ const App = () => {
           </TouchableOpacity>
         ))}
       </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center", // 垂直居中
+    alignItems: "center", // 水平居中
+    position: "relative",
+  },
+  topButton:{color:'#fff', fontSize:24},
+  button: {
+    // position: "absolute",
+    bottom: 300, // 控制按钮相对于容器顶部的位置
+    left: 0, // 控制按钮相对于容器左侧的位置
+    backgroundColor: "#007AFF", // iOS按钮蓝色
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    shadowColor: "rgba(0, 0, 0, 0.1)",
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    shadowOpacity: 1,
+    marginBottom:20
+  },
   circle: {
     width: 300,
     height: 300,
@@ -93,7 +134,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     alignSelf: "center",
     position: "absolute",
-
     bottom: 200,
     margin: "auto",
     transform: [{ rotate: "45deg" }],
