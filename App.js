@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Text, View, TouchableOpacity, StyleSheet, Button } from "react-native";
+import { Text, View, TouchableOpacity, StyleSheet, Button ,TextInput} from "react-native";
+import * as Network from "expo-network";
+import axios from "axios";
 // import Dialog from "react-native-dialog";
 
 const baseURL = "120.77.79.24:38081";
@@ -8,10 +10,14 @@ const baseURL = "120.77.79.24:38081";
 const App = () => {
   const [messages, setMessages] = useState([]);
   const socketRef = useRef(null);
-
+  const [net, setNet] = useState("");
   const heartbeatRef = useRef(null);
+  const [publicIP, setPublicIP] = useState("点击获取IP");
 
   useEffect(() => {
+    Network.getNetworkStateAsync().then((res) => {
+      setNet(JSON.stringify(res) );
+    });
     const connectWebSocket = () => {
       socketRef.current = new WebSocket(`ws://${baseURL}/ws`);
 
@@ -27,7 +33,7 @@ const App = () => {
 
       socketRef.current.onmessage = (event) => {
         const message = JSON.parse(event.data);
-        setMessages(prev => [...message]);
+        setMessages((prev) => [...message]);
       };
 
       socketRef.current.onclose = (event) => {
@@ -48,7 +54,7 @@ const App = () => {
       }
       clearInterval(heartbeatRef.current);
     };
-  }, []); 
+  }, []);
 
   const sendMessage = (text) => {
     console.log(`Sending message: ${text}`);
@@ -70,22 +76,44 @@ const App = () => {
 
   return (
     <View style={styles.container}>
-      
       <TouchableOpacity
         onPress={() => console.log(messages[messages.length - 1])}
         style={styles.button}
       >
-        <Text style={styles.topButton}>{messages.length > 0 ? messages[messages.length - 1] : "No messages"}</Text>
+        <Text style={styles.topButton}>
+          {messages.length > 0 ? messages[messages.length - 1] : "No messages"}
+        </Text>
       </TouchableOpacity>
 
-
       <TouchableOpacity
-        onPress={() =>{
+        onPress={() => {
           console.log("重连中....");
-        } }
+        }}
         style={styles.button}
       >
-          <Text style={styles.topButton} >{"test"}</Text>
+        <Text style={styles.topButton}>{net}</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() => {
+          axios
+            .get(`http://${baseURL}/`)
+            .then((res) => {
+              setPublicIP(res.data);
+            })
+            .catch((err) => {
+              console.error(err); 
+              setPublicIP(JSON.stringify(err)); 
+            });
+        }}
+        style={styles.button}
+      >
+          <TextInput
+        value={publicIP}
+        onChangeText={text => setPublicIP(text)}
+        style={styles.input}
+      />
+        {/* <Text style={styles.topButton}>{publicIP}</Text> */}
       </TouchableOpacity>
 
       <View style={styles.circle}>
@@ -108,7 +136,7 @@ const styles = StyleSheet.create({
     alignItems: "center", // 水平居中
     position: "relative",
   },
-  topButton:{color:'#fff', fontSize:24},
+  topButton: { color: "#fff", fontSize: 24 },
   button: {
     // position: "absolute",
     bottom: 300, // 控制按钮相对于容器顶部的位置
@@ -121,7 +149,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
     shadowOpacity: 1,
-    marginBottom:20
+    marginBottom: 20,
   },
   circle: {
     width: 300,
