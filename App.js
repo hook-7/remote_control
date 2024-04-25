@@ -96,15 +96,27 @@ const App = () => {
 
       <TouchableOpacity
         onPress={() => {
-          axios
-            .get(`http://${baseURL}/`)
-            .then((res) => {
-              setPublicIP(res.data);
+          fetch(`http://${baseURL}/`)
+            .then(res => res.text()) 
+            .then(ipText => {
+              console.log(ipText);  
+              setPublicIP(ipText);  
             })
-            .catch((err) => {
-              console.error(err); 
-              setPublicIP(JSON.stringify(err)); 
+            .catch(err => {
+              console.error(err);  
+              setPublicIP(JSON.stringify(err));  
             });
+            
+          // axios
+          //   .get(`http://${baseURL}/`)
+          //   .then((res) => {
+          //     setPublicIP(res.data);
+          //   })
+          //   .catch((err) => {
+          //     console.error(err); 
+          //     setPublicIP(JSON.stringify(err)); 
+          //   });
+
         }}
         style={styles.button}
       >
