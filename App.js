@@ -4,7 +4,7 @@ import * as Network from "expo-network";
 import axios from "axios";
 // import Dialog from "react-native-dialog";
 
-const baseURL = "120.77.79.24:38081";
+const baseURL = "qlmsmart.com/goapi";
 // const baseURL= '192.168.1.130';
 
 const App = () => {
@@ -19,7 +19,7 @@ const App = () => {
       setNet(JSON.stringify(res) );
     });
     const connectWebSocket = () => {
-      socketRef.current = new WebSocket(`ws://${baseURL}/ws`);
+      socketRef.current = new WebSocket(`wss://${baseURL}/ws`);
 
       socketRef.current.onopen = () => {
         console.log("WebSocket connection opened");
@@ -97,7 +97,7 @@ const App = () => {
       <TouchableOpacity
         onPress={() => {
           axios
-            .get(`http://${baseURL}/`)
+            .get(`https://${baseURL}/`)
             .then((res) => {
               setPublicIP(res.data);
             })
