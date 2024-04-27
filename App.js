@@ -59,7 +59,7 @@ const App = () => {
   const sendMessage = (text) => {
     console.log(`Sending message: ${text}`);
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      socketRef.current.send(`at_${text}`);
+      socketRef.current.send(text);
     }
   };
 
@@ -68,8 +68,8 @@ const App = () => {
   };
 
   const buttonProps = (direction) => ({
-    onPressIn: () => sendMessage(direction),
-    onPressOut: () => sendMessage("stop"),
+    onPressIn: () => sendMessage(`at_${direction}`),
+    onPressOut: () => sendMessage("at_stop"),
     onLongPress: handleLongPress,
     style: [styles.quarter, styles[direction], styles.noBorder],
   });
@@ -109,12 +109,8 @@ const App = () => {
         }}
         style={styles.button}
       >
-          <TextInput
-        value={publicIP}
-        onChangeText={text => setPublicIP(text)}
-        style={styles.input}
-      />
-        {/* <Text style={styles.topButton}>{publicIP}</Text> */}
+
+        <Text style={styles.topButton}>{publicIP}</Text>
       </TouchableOpacity>
 
       <View style={styles.circle}>
